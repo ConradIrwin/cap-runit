@@ -5,11 +5,16 @@ deploy services using capistrano 3 and run them with runit.
 
 ## Installation
 
-Using bundler: Add `gem 'cap-runit'` to your `Gemfile` and `require 'bundler';
-Bundler.require` to your `Capfile`.
+#### Using bundler
 
-Not using bundler: `gem install cap-runit` and add `require 'capistrano/runit'`
-to your `Capfile`.
+1. Add `gem 'cap-runit'` to your `Gemfile`
+2. Run `bundle install`
+3. Add `require 'bundler'; Bundler.require` to your `Capfile`
+
+#### Without bundler
+
+1. Run `gem install cap-runit`
+2. Add `require 'capistrano/runit' to your `Capfile`
 
 ## Usage
 
@@ -22,6 +27,9 @@ For example, to run sidekiq, you might do something like this:
 
 ```ruby
 runit_service 'sidekiq' do
+
+  # Sidekiq should only run on servers with role: %w{sidekiq}
+  roles :sidekiq
 
   run <<-EOF
 #!/bin/bash
@@ -59,6 +67,8 @@ automatically.
 ```ruby
 runit_service 'sidekiq' do
 
+  roles :sidekiq
+
   run <<-EOF
 #!/bin/bash -l
 cd /var/www/app/current
@@ -73,6 +83,9 @@ exec svlogd -tt /var/log/sidekiq
 end
 ```
 
+N.B. For this example to work you will need to ensure that `/var/log/sidekiq`
+can be written to by the capistrano user.
+
 ### Crash notifications
 
 If you need to be notified of when a crash happens in your app, you can also
@@ -80,6 +93,8 @@ configure a `finish` script. This is run whenever the `run` script exits.
 
 ```ruby
 runit_service 'sidekiq' do
+
+  roles :sidekiq
 
   run <<-EOF
 #!/bin/bash -l
@@ -110,8 +125,9 @@ The only configuration variable you need to pass is `runit_service_directory`
 set :runit_service_directory, "/apps/service"
 ```
 
-The service directory needs to be run with `runsvdir` and owned by the
-capistrano user. To configure `runsvdir` you can create the following files:
+This should point to a directory that is being run by runit, and which the
+capistrano user has permission to modify. I suggest setting up something like
+`/apps/service` run by the `deploy` user. This can be done by creating two files:
 
 
 ```bash
@@ -127,10 +143,9 @@ And
 #/etc/service/cap-runit/log/run
 
 #!/bin/sh
+mkdir -p /var/log/cap-runit
 exec svlogd -tt /var/log/cap-runit
 ```
 
 These files should both be owned by root and `chmod +x`. This way the deploy
 user does not need root permissions to reboot a service on deploy.
-
-
