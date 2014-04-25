@@ -115,11 +115,25 @@ def runit_service(name, &block)
         execute "sv stop #{runit_service_dir}/#{name}"
       end
     end
+    
+    desc "Force stop #{name}"
+    task :force_stop do
+      on roles(*service.roles) do
+        execute "sv force-stop #{runit_service_dir}/#{name}"
+      end
+    end
 
     desc "Restart #{name}"
     task restart: :configure do
       on roles(*service.roles) do
         execute "sv restart #{runit_service_dir}/#{name}"
+      end
+    end
+    
+    desc "Force restart #{name}"
+    task force_restart: :configure do
+      on roles(*service.roles) do
+        execute "sv force-restart #{runit_service_dir}/#{name}"
       end
     end
 
