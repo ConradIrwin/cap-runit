@@ -122,6 +122,7 @@ def runit_service(name, &block)
         execute "sv force-stop #{runit_service_dir}/#{name}"
       end
     end
+    task :'force-stop' => :force_stop
 
     desc "Restart #{name}"
     task restart: :configure do
@@ -136,6 +137,7 @@ def runit_service(name, &block)
         execute "sv force-restart #{runit_service_dir}/#{name}"
       end
     end
+    task :'force-restart' => :force_restart
 
     desc "Disable #{name}"
     task :disable do
