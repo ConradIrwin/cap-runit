@@ -1,6 +1,6 @@
 Gem::Specification.new do |gem|
   gem.name = 'cap-runit'
-  gem.version = '0.1'
+  gem.version = '0.2.0'
 
   gem.summary = 'Capistrano 3 Runit integration'
   gem.description = "Template for managing runit directories with capistrano 3"
