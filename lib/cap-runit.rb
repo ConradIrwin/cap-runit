@@ -80,7 +80,7 @@ def runit_service(name, &block)
   namespace name do
     desc "Configure #{name} runit"
     task :configure do
-      on roles(service.roles) do
+      on roles(service.roles), in: :groups, limit: 4 do
         unless test("[ -e #{runit_service_dir}/#{name}/run ]")
           execute <<-EOF
           rm -rf #{runit_service_dir}/#{name}
@@ -104,47 +104,46 @@ def runit_service(name, &block)
 
     desc "Start #{name}"
     task start: :configure do
-      on roles(*service.roles) do
+      on roles(*service.roles), in: :groups, limit: 4 do
         execute "sv start #{runit_service_dir}/#{name}"
       end
     end
 
     desc "Stop #{name}"
     task :stop do
-      on roles(*service.roles) do
+      on roles(*service.roles), in: :groups, limit: 4 do
         execute "sv stop #{runit_service_dir}/#{name}"
       end
     end
-    
+
     desc "Force stop #{name}"
     task :force_stop do
-      on roles(*service.roles) do
-        execute "sv force-stop #{runit_service_dir}/#{name}"
+      on roles(*service.roles), in: :groups, limit: 4 do
+        execute "sv force-stop #{runit_service_dir}/#{name} || true"
       end
     end
     task :'force-stop' => :force_stop
 
     desc "Restart #{name}"
     task restart: :configure do
-      on roles(*service.roles) do
+      on roles(*service.roles), in: :groups, limit: 4 do
         execute "sv restart #{runit_service_dir}/#{name}"
       end
     end
-    
+
     desc "Force restart #{name}"
     task force_restart: :configure do
-      on roles(*service.roles) do
-        execute "sv force-restart #{runit_service_dir}/#{name}"
+      on roles(*service.roles), in: :groups, limit: 4 do
+        execute "sv force-restart #{runit_service_dir}/#{name} || true"
       end
     end
     task :'force-restart' => :force_restart
 
     desc "Disable #{name}"
     task :disable do
-      on roles(*service.roles) do
+      on roles(*service.roles), in: :groups, limit: 4 do
         execute "rm -rf #{runit_service_dir}/#{name}"
       end
     end
   end
 end
-
